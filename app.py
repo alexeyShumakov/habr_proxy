@@ -41,19 +41,21 @@ def recursive_replace(tag):
 
 @app.errorhandler(404)
 def root(_e):
-    habr_url = flask_req.url.replace(LOCAL_HOST, HABR_HOST)
-    resp = requests.get(habr_url)
+    resp = requests.get(flask_req.url.replace(LOCAL_HOST, HABR_HOST))
+
+    response_body = resp.content
     resp_content_type = resp.headers.get('content-type', '')
+
     if 'text/html' in resp_content_type:
         bs_instance = BeautifulSoup(resp.content, 'html.parser')
-
         recursive_replace(bs_instance)
+
         for tag_name, prop in REPLACE_TAG_PROP_TUPLE:
             update_element(bs_instance, tag_name, prop)
 
-        return Response(str(bs_instance), resp.status_code, mimetype=resp_content_type)
+        response_body = str(bs_instance)
 
-    return Response(resp.content, resp.status_code, mimetype=resp_content_type)
+    return Response(response_body, resp.status_code, mimetype=resp_content_type)
 
 
 if __name__ == '__main__':
