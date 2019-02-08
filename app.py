@@ -24,19 +24,19 @@ def replace_host(tag, prop):
     tag[prop] = tag[prop].replace(HABR_HOST, LOCAL_HOST)
 
 
-def update_element(bs_instance, tag_name, prop):
+def replace_links(bs_instance, tag_name, prop):
     elements = bs_instance.find_all(tag_name, **{prop: SEARCH_PATTERN})
     [replace_host(element, prop) for element in elements]
 
 
-def recursive_replace(tag):
+def recursive_replace_text(tag):
     for child in tag.contents:
         if type(child) is NavigableString:
             fixed_text = re.sub(r'\b(\w{6})\b', '\g<1>\N{TRADE MARK SIGN}', child.string)
             child.replace_with(fixed_text)
         elif type(child) is Tag:
             if child.name != 'script':
-                recursive_replace(child)
+                recursive_replace_text(child)
 
 
 @app.errorhandler(404)
@@ -48,10 +48,10 @@ def root(_e):
 
     if 'text/html' in resp_content_type:
         bs_instance = BeautifulSoup(resp.content, 'html.parser')
-        recursive_replace(bs_instance)
+        recursive_replace_text(bs_instance)
 
         for tag_name, prop in REPLACE_TAG_PROP_TUPLE:
-            update_element(bs_instance, tag_name, prop)
+            replace_links(bs_instance, tag_name, prop)
 
         response_body = str(bs_instance)
 
