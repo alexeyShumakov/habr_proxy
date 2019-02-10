@@ -7,7 +7,8 @@ from bs4.element import NavigableString, Tag
 
 
 HABR_HOST = 'https://habr.com'
-LOCAL_HOST = 'http://localhost:5000'
+PORT=5000
+LOCAL_HOST = f'http://localhost:{PORT}'
 SEARCH_PATTERN = re.compile(f'^{HABR_HOST}')
 REPLACE_TAG_PROP_TUPLE = (
     ('a', 'href'),
@@ -47,7 +48,7 @@ def root(_e):
     resp_content_type = resp.headers.get('content-type', '')
 
     if 'text/html' in resp_content_type:
-        bs_instance = BeautifulSoup(resp.content, 'html.parser')
+        bs_instance = BeautifulSoup(response_body, 'html.parser')
         recursive_replace_text(bs_instance)
 
         for tag_name, prop in REPLACE_TAG_PROP_TUPLE:
@@ -59,4 +60,4 @@ def root(_e):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=True, port=PORT)
